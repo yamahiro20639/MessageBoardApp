@@ -29,6 +29,7 @@ app.MapGet("/index", () =>
         var reader = command.ExecuteReader();
         var resultList = new List<Response>();
 
+
         while (reader.Read())
         {
             resultList.Add(new Response { Id = reader.GetInt32("id"), Message = reader.GetString("message") });
