@@ -1,8 +1,8 @@
 using MySql.Data.MySqlClient;
-using System.Reflection.PortableExecutable;
 using System.Text;
 
-namespace MySQLConnectionTest
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddCors(options =>
 {
     options.AddPolicy(
         "AllowAll",
@@ -20,8 +20,7 @@ var app = builder.Build();
 // CORSポリシーを設定
 app.UseCors("AllowAll");
 
-//全件取得
-    app.MapGet("/index", () =>
+app.MapGet("/index", () =>
 {
     using (var con = new MySqlConnection("server=localhost;user=root;password=Malaysia4649;database=message_information;"))
     {
@@ -29,20 +28,16 @@ app.UseCors("AllowAll");
         var command = new MySqlCommand("select id, message from messages;", con);
         var reader = command.ExecuteReader();
         var resultList = new List<Response>();
-        
+
         while (reader.Read())
         {
             resultList.Add(new Response { Id = reader.GetInt32("id"), Message = reader.GetString("message") });
         }
+        return Results.Ok(resultList);
     }
 
 });
 
-//新規登録画面を表示させるための機能
-app.MapGet("/new", () =>
-{
-return Results.Ok();
-});
 app.Run();
 
 class Response
