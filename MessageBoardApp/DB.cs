@@ -39,6 +39,13 @@ app.MapGet("/index", () =>
 
 });
 
+//V‹K“o˜^‰æ–Ê‚ð•\Ž¦‚³‚¹‚é‚½‚ß‚Ì‹@”\
+app.MapGet("/new", () =>
+{
+    return Results.Ok();
+});
+
+
 app.Run();
 
 class Response
