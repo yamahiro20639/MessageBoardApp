@@ -45,6 +45,28 @@ app.MapGet("/new", () =>
     return Results.Ok();
 });
 
+//V‹K“o˜^ˆ—
+app.MapPost("/create", (string message) =>
+{
+    using (var con = new MySqlConnection("server=localhost;user=root;password=Malaysia4649;database=message_information;"))
+    {
+        con.Open();
+        var command = new MySqlCommand("insert into messages (message)  values (@message);", con);
+        command.Parameters.AddWithValue("@message", message);
+        command = new MySqlCommand("select id, message from messages;", con);
+        var reader = command.ExecuteReader();
+        var resultList = new List<Response>();
+
+
+        while (reader.Read())
+        {
+            resultList.Add(new Response { Id = reader.GetInt32("id"), Message = reader.GetString("message") });
+        }
+        return Results.Ok(resultList);
+    }
+
+});
+
 
 app.Run();
 
