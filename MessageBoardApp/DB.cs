@@ -27,12 +27,12 @@ app.MapGet("/index", () =>
         con.Open();
         var command = new MySqlCommand("select id, message from messages;", con);
         var reader = command.ExecuteReader();
-        var resultList = new List<Response>();
+        var resultList = new List<Message>();
 
 
         while (reader.Read())
         {
-            resultList.Add(new Response { Id = reader.GetInt32("id"), Message = reader.GetString("message") });
+            resultList.Add(new Message { id = reader.GetInt32("id"), message = reader.GetString("message") });
         }
         return Results.Ok(resultList);
     }
@@ -46,21 +46,22 @@ app.MapGet("/new", () =>
 });
 
 //V‹K“o˜^ˆ—
-app.MapPost("/create", (string message) =>
+app.MapPost("/create", (Message mes) =>
 {
     using (var con = new MySqlConnection("server=localhost;user=root;password=Malaysia4649;database=message_information;"))
     {
         con.Open();
         var command = new MySqlCommand("insert into messages (message)  values (@message);", con);
-        command.Parameters.AddWithValue("@message", message);
+        command.Parameters.AddWithValue("@message", mes.message);
+        command.ExecuteNonQuery();
         command = new MySqlCommand("select id, message from messages;", con);
         var reader = command.ExecuteReader();
-        var resultList = new List<Response>();
+        var resultList = new List<Message>();
 
 
         while (reader.Read())
         {
-            resultList.Add(new Response { Id = reader.GetInt32("id"), Message = reader.GetString("message") });
+            resultList.Add(new Message { id = reader.GetInt32("id"), message = reader.GetString("message") });
         }
         return Results.Ok(resultList);
     }
@@ -70,8 +71,8 @@ app.MapPost("/create", (string message) =>
 
 app.Run();
 
-class Response
+class Message
 {
-    public int? Id { get; set; }
-    public string? Message { get; set; }
+    public int? id { get; set; }
+    public string? message { get; set; }
 }
