@@ -1,5 +1,5 @@
 using MySql.Data.MySqlClient;
-using System.Text;
+using System.Data.SqlClient;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCors(options =>
@@ -19,6 +19,8 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 // CORSポリシーを設定
 app.UseCors("AllowAll");
+
+
 
 app.MapGet("/index", () =>
 {
@@ -66,6 +68,21 @@ app.MapPost("/create", (Message mes) =>
         return Results.Ok(resultList);
     }
 
+});
+
+//ID指定してメッセージを獲得する
+app.MapGet("/show", (int? id) =>
+{
+    using (var con = new MySqlConnection("server=localhost;user=root;password=Malaysia4649;database=message_information;"))
+    {
+        con.Open();
+        var command = new MySqlCommand("select id, message from messages where id= @id ;", con);
+        command.Parameters.Add(new MySqlParameter("@id", id));
+        var reader = command.ExecuteReader();
+        reader.Read();
+        Message mes = new Message { id = reader.GetInt32("id"), message = reader.GetString("message") };
+        return Results.Ok(mes);
+    }
 });
 
 
