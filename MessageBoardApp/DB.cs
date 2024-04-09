@@ -85,6 +85,12 @@ app.MapGet("/show", (int? id) =>
     }
 });
 
+//•ÒW‰æ–Ê‚ğ•\¦‚³‚¹‚é
+app.MapGet("/edit", () =>
+{
+    return Results.Ok();
+});
+
 
 app.Run();
 
