@@ -1,5 +1,6 @@
 using MySql.Data.MySqlClient;
-using System.Data.SqlClient;
+using System.Security.Cryptography.X509Certificates;
+using ZstdSharp.Unsafe;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCors(options =>
@@ -26,7 +27,7 @@ MySqlConnection connection = new MySqlConnection("server=localhost;user=root;pas
 
 app.MapGet("/index", () =>
 {
-
+     
     connection.Open();
     MySqlCommand command = new MySqlCommand("select id, message from messages;", connection);
     MySqlDataReader reader = command.ExecuteReader();
@@ -56,6 +57,8 @@ app.MapPost("/create", (Message mes) =>
     MySqlCommand command = new MySqlCommand("insert into messages (message)  values (@message);", connection);
     command.Parameters.AddWithValue("@message", mes.message);
     command.ExecuteNonQuery();
+
+    //以下一覧表示と同じ処理のため、省略できないかな
     command = new MySqlCommand("select id, message from messages;", connection);
     MySqlDataReader reader = command.ExecuteReader();
 
@@ -99,6 +102,8 @@ app.MapPost("/update", (Message mes) =>
     command.Parameters.Add(new MySqlParameter("@id", mes.id));
     command.Parameters.Add(new MySqlParameter("@message", mes.message));
     command.ExecuteNonQuery();
+
+    //以下一覧表示と同じ処理のため、省略できないかな
     command = new MySqlCommand("select id, message from messages;", connection);
     MySqlDataReader reader = command.ExecuteReader();
 
@@ -119,6 +124,8 @@ app.MapPost("/delete", (Message mes) =>
     MySqlCommand command = new MySqlCommand("delete from  messages where id = @id;", connection);
     command.Parameters.Add(new MySqlParameter("@id", mes.id));
     command.ExecuteNonQuery();
+
+    //以下一覧表示と同じ処理のため、省略できないかな
     command = new MySqlCommand("select id, message from messages;", connection);
     MySqlDataReader reader = command.ExecuteReader();
 
