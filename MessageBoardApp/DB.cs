@@ -27,8 +27,8 @@ app.MapGet("/index", () =>
     using (var con = new MySqlConnection("server=localhost;user=root;password=Malaysia4649;database=message_information;"))
     {
         con.Open();
-        var command = new MySqlCommand("select id, message from messages;", con);
-        var reader = command.ExecuteReader();
+        MySqlCommand command = new MySqlCommand("select id, message from messages;", con);
+        MySqlDataReader reader = command.ExecuteReader();
         var resultList = new List<Message>();
 
 
@@ -54,11 +54,11 @@ app.MapPost("/create", (Message mes) =>
     using (var con = new MySqlConnection("server=localhost;user=root;password=Malaysia4649;database=message_information;"))
     {
         con.Open();
-        var command = new MySqlCommand("insert into messages (message)  values (@message);", con);
+        MySqlCommand command = new MySqlCommand("insert into messages (message)  values (@message);", con);
         command.Parameters.AddWithValue("@message", mes.message);
         command.ExecuteNonQuery();
         command = new MySqlCommand("select id, message from messages;", con);
-        var reader = command.ExecuteReader();
+        MySqlDataReader reader = command.ExecuteReader();
         var resultList = new List<Message>();
 
 
@@ -78,7 +78,7 @@ app.MapGet("/show", (int? id) =>
     using (var con = new MySqlConnection("server=localhost;user=root;password=Malaysia4649;database=message_information;"))
     {
         con.Open();
-        var command = new MySqlCommand("select id, message from messages where id= @id ;", con);
+        MySqlCommand command = new MySqlCommand("select id, message from messages where id= @id ;", con);
         command.Parameters.Add(new MySqlParameter("@id", id));
         MySqlDataReader reader = command.ExecuteReader();
         reader.Read();
@@ -100,12 +100,12 @@ app.MapPost("/update", (Message mes) =>
     using (var con = new MySqlConnection("server=localhost;user=root;password=Malaysia4649;database=message_information;"))
     {
         con.Open();
-        var command = new MySqlCommand("update messages set message=@message where id = @id;", con);
+        MySqlCommand command = new MySqlCommand("update messages set message=@message where id = @id;", con);
         command.Parameters.Add(new MySqlParameter("@id", mes.id));
         command.Parameters.Add(new MySqlParameter("@message", mes.message));
         command.ExecuteNonQuery();
         command = new MySqlCommand("select id, message from messages;", con);
-        var reader = command.ExecuteReader();
+        MySqlDataReader reader = command.ExecuteReader();
         var resultList = new List<Message>();
 
 
