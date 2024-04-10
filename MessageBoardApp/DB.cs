@@ -20,22 +20,24 @@ var app = builder.Build();
 // CORSポリシーを設定
 app.UseCors("AllowAll");
 
+//MySQL接続
 MySqlConnection connection = new MySqlConnection("server=localhost;user=root;password=Malaysia4649;database=message_information;");
-connection.Open();
+
 
 app.MapGet("/index", () =>
 {
 
-
+    connection.Open();
     MySqlCommand command = new MySqlCommand("select id, message from messages;", connection);
     MySqlDataReader reader = command.ExecuteReader();
-
+   
     var resultList = new List<Message>();
     while (reader.Read())
     {
         resultList.Add(new Message { id = reader.GetInt32("id"), message = reader.GetString("message") });
     }
     reader.Close();
+    connection.Close();
     return Results.Ok(resultList);
 
 
@@ -50,7 +52,7 @@ app.MapGet("/new", () =>
 //新規登録処理
 app.MapPost("/create", (Message mes) =>
 {
-
+    connection.Open();
     MySqlCommand command = new MySqlCommand("insert into messages (message)  values (@message);", connection);
     command.Parameters.AddWithValue("@message", mes.message);
     command.ExecuteNonQuery();
@@ -63,6 +65,7 @@ app.MapPost("/create", (Message mes) =>
         resultList.Add(new Message { id = reader.GetInt32("id"), message = reader.GetString("message") });
     }
     reader.Close();
+    connection.Close();
     return Results.Ok(resultList);
 
 
@@ -71,11 +74,14 @@ app.MapPost("/create", (Message mes) =>
 //ID指定してメッセージを獲得する
 app.MapGet("/show", (int? id) =>
 {
+    connection.Open();
     MySqlCommand command = new MySqlCommand("select id, message from messages where id= @id ;", connection);
     command.Parameters.Add(new MySqlParameter("@id", id));
     MySqlDataReader reader = command.ExecuteReader();
     reader.Read();
     Message mes = new Message { id = reader.GetInt32("id"), message = reader.GetString("message") };
+    reader.Close();
+    connection.Close();
     return Results.Ok(mes);
 });
 
@@ -88,6 +94,7 @@ app.MapGet("/edit", () =>
 //更新処理
 app.MapPost("/update", (Message mes) =>
 {
+    connection.Open();
     MySqlCommand command = new MySqlCommand("update messages set message=@message where id = @id;", connection);
     command.Parameters.Add(new MySqlParameter("@id", mes.id));
     command.Parameters.Add(new MySqlParameter("@message", mes.message));
@@ -100,6 +107,8 @@ app.MapPost("/update", (Message mes) =>
     {
         resultList.Add(new Message { id = reader.GetInt32("id"), message = reader.GetString("message") });
     }
+    reader.Close();
+    connection.Close();
     return Results.Ok(resultList);
 
 });
