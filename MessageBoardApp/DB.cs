@@ -91,6 +91,30 @@ app.MapGet("/edit", () =>
     return Results.Ok();
 });
 
+//更新処理
+app.MapPost("/update", (Message mes) =>
+{
+    using (var con = new MySqlConnection("server=localhost;user=root;password=Malaysia4649;database=message_information;"))
+    {
+        con.Open();
+        var command = new MySqlCommand("update messages set message=@message where id = @id;", con);
+        command.Parameters.Add(new MySqlParameter("@id", mes.id));
+        command.Parameters.Add(new MySqlParameter("@message", mes.message));
+        command.ExecuteNonQuery();
+        command = new MySqlCommand("select id, message from messages;", con);
+        var reader = command.ExecuteReader();
+        var resultList = new List<Message>();
+
+
+        while (reader.Read())
+        {
+            resultList.Add(new Message { id = reader.GetInt32("id"), message = reader.GetString("message") });
+        }
+        return Results.Ok(resultList);
+    }
+
+});
+
 
 app.Run();
 
