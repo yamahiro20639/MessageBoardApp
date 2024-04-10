@@ -113,6 +113,26 @@ app.MapPost("/update", (Message mes) =>
 
 });
 
+app.MapPost("/delete", (Message mes) =>
+{
+    connection.Open();
+    MySqlCommand command = new MySqlCommand("delete from  messages where id = @id;", connection);
+    command.Parameters.Add(new MySqlParameter("@id", mes.id));
+    command.ExecuteNonQuery();
+    command = new MySqlCommand("select id, message from messages;", connection);
+    MySqlDataReader reader = command.ExecuteReader();
+
+    var resultList = new List<Message>();
+    while (reader.Read())
+    {
+        resultList.Add(new Message { id = reader.GetInt32("id"), message = reader.GetString("message") });
+    }
+    reader.Close();
+    connection.Close();
+    return Results.Ok(resultList);
+
+});
+
 
 app.Run();
 
