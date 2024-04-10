@@ -36,6 +36,7 @@ app.MapGet("/index", () =>
         {
             resultList.Add(new Message { id = reader.GetInt32("id"), message = reader.GetString("message") });
         }
+        reader.Close();
         return Results.Ok(resultList);
     }
 
@@ -65,6 +66,7 @@ app.MapPost("/create", (Message mes) =>
         {
             resultList.Add(new Message { id = reader.GetInt32("id"), message = reader.GetString("message") });
         }
+        reader.Close();
         return Results.Ok(resultList);
     }
 
@@ -78,9 +80,10 @@ app.MapGet("/show", (int? id) =>
         con.Open();
         var command = new MySqlCommand("select id, message from messages where id= @id ;", con);
         command.Parameters.Add(new MySqlParameter("@id", id));
-        var reader = command.ExecuteReader();
+        MySqlDataReader reader = command.ExecuteReader();
         reader.Read();
         Message mes = new Message { id = reader.GetInt32("id"), message = reader.GetString("message") };
+        reader.Close();
         return Results.Ok(mes);
     }
 });
@@ -91,7 +94,7 @@ app.MapGet("/edit", () =>
     return Results.Ok();
 });
 
-//æ›´æ–°å‡¦ç†
+//XVˆ—
 app.MapPost("/update", (Message mes) =>
 {
     using (var con = new MySqlConnection("server=localhost;user=root;password=Malaysia4649;database=message_information;"))
