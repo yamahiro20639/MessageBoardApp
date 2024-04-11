@@ -1,6 +1,4 @@
 using MySql.Data.MySqlClient;
-using System.Security.Cryptography.X509Certificates;
-using ZstdSharp.Unsafe;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCors(options =>
@@ -25,22 +23,27 @@ app.UseCors("AllowAll");
 MySqlConnection connection = new MySqlConnection("server=localhost;user=root;password=Malaysia4649;database=message_information;");
 
 
-app.MapGet("/index", () =>
+app.MapGet("/index", (int? page) =>
 {
      
     connection.Open();
-    MySqlCommand command = new MySqlCommand("select id, message from messages;", connection);
+    MySqlCommand command = new MySqlCommand("select id, message from messages limit @start,5;", connection);
+    command.Parameters.Add(new MySqlParameter("@start", page*5-5));
     MySqlDataReader reader = command.ExecuteReader();
-   
+
     var resultList = new List<Message>();
     while (reader.Read())
     {
         resultList.Add(new Message { id = reader.GetInt32("id"), message = reader.GetString("message") });
     }
     reader.Close();
-    connection.Close();
-    return Results.Ok(resultList);
 
+
+    MySqlCommand messageListCount = new MySqlCommand("select count(id)  from messages ;", connection);
+    int totalPageCount = Convert.ToInt32(messageListCount.ExecuteScalar()) / 5;
+
+    connection.Close();
+    return Results.Ok(new { resultList, totalPageCount });
 
 });
 
