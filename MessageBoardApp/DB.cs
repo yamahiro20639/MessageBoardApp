@@ -25,25 +25,58 @@ MySqlConnection connection = new MySqlConnection("server=localhost;user=root;pas
 
 app.MapGet("/index", (int? page) =>
 {
-     
-    connection.Open();
-    MySqlCommand command = new MySqlCommand("select id, message from messages limit @start,5;", connection);
-    command.Parameters.Add(new MySqlParameter("@start", page*5-5));
-    MySqlDataReader reader = command.ExecuteReader();
-
-    var resultList = new List<Message>();
-    while (reader.Read())
+    if (page == null)
     {
-        resultList.Add(new Message { id = reader.GetInt32("id"), message = reader.GetString("message") });
+        connection.Open();
+        MySqlCommand command = new MySqlCommand("select id, message from messages limit 0,5;", connection);
+        MySqlDataReader reader = command.ExecuteReader();
+
+        var resultList = new List<Message>();
+        while (reader.Read())
+        {
+            resultList.Add(new Message { id = reader.GetInt32("id"), message = reader.GetString("message") });
+        }
+        reader.Close();
+
+
+        MySqlCommand messageListCount = new MySqlCommand("select count(id)  from messages ;", connection);
+        int[] pages = new int[1];
+        pages[0] = 1;
+
+        connection.Close();
+        return Results.Ok(new { resultList, pages });
     }
-    reader.Close();
+    else
+    {
+        connection.Open();
+        MySqlCommand command = new MySqlCommand("select id, message from messages limit @start,5;", connection);
+        command.Parameters.Add(new MySqlParameter("@start", page * 5 - 5));
+        MySqlDataReader reader = command.ExecuteReader();
+
+        var resultList = new List<Message>();
+        while (reader.Read())
+        {
+            resultList.Add(new Message { id = reader.GetInt32("id"), message = reader.GetString("message") });
+        }
+        reader.Close();
 
 
-    MySqlCommand messageListCount = new MySqlCommand("select count(id)  from messages ;", connection);
-    int totalPageCount = Convert.ToInt32(messageListCount.ExecuteScalar()) / 5;
+        MySqlCommand messageListCount = new MySqlCommand("select count(id)  from messages ;", connection);
+        double doubleOfTotalPageCount = Convert.ToDouble(messageListCount.ExecuteScalar()) / 5;
+        int TotalPageCount = (int)Math.Ceiling(doubleOfTotalPageCount);
+        int[] pages = new int[TotalPageCount];
+        int j = 1;
+        for (int i = 0; i < pages.Length; i++)
+        {
 
-    connection.Close();
-    return Results.Ok(new { resultList, totalPageCount });
+            pages[i] = j;
+
+            j++;
+
+        }
+        connection.Close();
+        return Results.Ok(new { resultList, pages });
+    }
 
 });
 
