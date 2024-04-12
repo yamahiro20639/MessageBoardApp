@@ -1,5 +1,4 @@
 using MySql.Data.MySqlClient;
-using System.Data.SqlClient;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCors(options =>
@@ -24,23 +23,45 @@ app.UseCors("AllowAll");
 MySqlConnection connection = new MySqlConnection("server=localhost;user=root;password=Malaysia4649;database=message_information;");
 
 
-app.MapGet("/index", () =>
+app.MapGet("/index", (int? page) =>
 {
-
-    connection.Open();
-    MySqlCommand command = new MySqlCommand("select id, message from messages;", connection);
-    MySqlDataReader reader = command.ExecuteReader();
-   
-    var resultList = new List<Message>();
-    while (reader.Read())
+    if (page == null)
     {
-        resultList.Add(new Message { id = reader.GetInt32("id"), message = reader.GetString("message") });
+        page = 1;
     }
-    reader.Close();
-    connection.Close();
-    return Results.Ok(resultList);
+
+        connection.Open();
+
+        MySqlCommand command = new MySqlCommand("select id, message from messages limit @start,5;", connection);
+   
+        command.Parameters.Add(new MySqlParameter("@start", page * 5 - 5));
+        MySqlDataReader reader = command.ExecuteReader();
+
+        var resultList = new List<Message>();
+        while (reader.Read())
+        {
+            resultList.Add(new Message { id = reader.GetInt32("id"), message = reader.GetString("message") });
+        }
+        reader.Close();
 
 
+        MySqlCommand messageListCount = new MySqlCommand("select count(id)  from messages ;", connection);
+        double doubleOfTotalPageCount = Convert.ToDouble(messageListCount.ExecuteScalar()) / 5;
+        int TotalPageCount = (int)Math.Ceiling(doubleOfTotalPageCount);
+        int[] pages = new int[TotalPageCount];
+        int j = 1;
+        for (int i = 0; i < pages.Length; i++)
+        {
+
+            pages[i] = j;
+
+            j++;
+
+        }
+        connection.Close();
+
+        return Results.Ok(new { resultList, pages });
+   
 });
 
 //新規登録画面を表示させるための機能
@@ -56,6 +77,8 @@ app.MapPost("/create", (Message mes) =>
     MySqlCommand command = new MySqlCommand("insert into messages (message)  values (@message);", connection);
     command.Parameters.AddWithValue("@message", mes.message);
     command.ExecuteNonQuery();
+
+    //以下一覧表示と同じ処理のため、省略できないかな
     command = new MySqlCommand("select id, message from messages;", connection);
     MySqlDataReader reader = command.ExecuteReader();
 
@@ -99,6 +122,30 @@ app.MapPost("/update", (Message mes) =>
     command.Parameters.Add(new MySqlParameter("@id", mes.id));
     command.Parameters.Add(new MySqlParameter("@message", mes.message));
     command.ExecuteNonQuery();
+
+    //以下一覧表示と同じ処理のため、省略できないかな
+    command = new MySqlCommand("select id, message from messages;", connection);
+    MySqlDataReader reader = command.ExecuteReader();
+
+    var resultList = new List<Message>();
+    while (reader.Read())
+    {
+        resultList.Add(new Message { id = reader.GetInt32("id"), message = reader.GetString("message") });
+    }
+    reader.Close();
+    connection.Close();
+    return Results.Ok(resultList);
+
+});
+
+app.MapPost("/delete", (Message mes) =>
+{
+    connection.Open();
+    MySqlCommand command = new MySqlCommand("delete from  messages where id = @id;", connection);
+    command.Parameters.Add(new MySqlParameter("@id", mes.id));
+    command.ExecuteNonQuery();
+
+    //以下一覧表示と同じ処理のため、省略できないかな
     command = new MySqlCommand("select id, message from messages;", connection);
     MySqlDataReader reader = command.ExecuteReader();
 
