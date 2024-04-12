@@ -27,29 +27,13 @@ app.MapGet("/index", (int? page) =>
 {
     if (page == null)
     {
-        connection.Open();
-        MySqlCommand command = new MySqlCommand("select id, message from messages limit 0,5;", connection);
-        MySqlDataReader reader = command.ExecuteReader();
-
-        var resultList = new List<Message>();
-        while (reader.Read())
-        {
-            resultList.Add(new Message { id = reader.GetInt32("id"), message = reader.GetString("message") });
-        }
-        reader.Close();
-
-
-        MySqlCommand messageListCount = new MySqlCommand("select count(id)  from messages ;", connection);
-        int[] pages = new int[1];
-        pages[0] = 1;
-
-        connection.Close();
-        return Results.Ok(new { resultList, pages });
+        page = 1;
     }
-    else
-    {
+
         connection.Open();
+
         MySqlCommand command = new MySqlCommand("select id, message from messages limit @start,5;", connection);
+   
         command.Parameters.Add(new MySqlParameter("@start", page * 5 - 5));
         MySqlDataReader reader = command.ExecuteReader();
 
@@ -75,9 +59,9 @@ app.MapGet("/index", (int? page) =>
 
         }
         connection.Close();
-        return Results.Ok(new { resultList, pages });
-    }
 
+        return Results.Ok(new { resultList, pages });
+   
 });
 
 //V‹K“o˜^‰æ–Ê‚ğ•\¦‚³‚¹‚é‚½‚ß‚Ì‹@”\
